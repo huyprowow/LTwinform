@@ -7,8 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
 using Winform_1.ConnectSqlNamespace;
+using Syncfusion.XlsIO;
+using System.IO;
 
 namespace Winform_1
 {
@@ -26,6 +27,7 @@ namespace Winform_1
         private double diem;
         private string gioiTinh = "nữ";
         private string msvDelete;
+        private string searchname;
 
         public Form2()
         {
@@ -180,17 +182,17 @@ namespace Winform_1
                     List<string> listInfo = connectSql.GetInfoByIdAndRender(msv_id);
                     if (listInfo.Any())
                     {
-                        msvInp.Text = listInfo[0];
-                        hotenInp.Text = listInfo[1];
+                        msvInp.Text = listInfo[0].Trim();
+                        hotenInp.Text = listInfo[1].Trim();
                         if (listInfo[2] != "")
                         {
                             ngaysinhDatePick.Value = DateTime.Parse(listInfo[2]);
                         }
                         gtNamRadBtn.Checked = (listInfo[3] == "nam");
                         gtNuRadBtn.Checked = (listInfo[3] != "nam");
-                        queInp.Text = listInfo[4];
-                        lopInp.Text = listInfo[5];
-                        khoaInp.Text = listInfo[6];
+                        queInp.Text = listInfo[4].Trim();
+                        lopInp.Text = listInfo[5].Trim();
+                        khoaInp.Text = listInfo[6].Trim();
                         diemComboBox.Text = listInfo[7];
                         hocphiInp.Value = decimal.Parse(listInfo[8]);
                     }
@@ -208,5 +210,36 @@ namespace Winform_1
             connectSql.GetAllAndRender(dataGridView1);
             connectSql.CloseConnection();
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            connectSql.OpenConnection();
+            connectSql.total();
+            connectSql.CloseConnection();
+        }
+
+        private void btn_timkiem_Click(object sender, EventArgs e)
+        {
+            connectSql.OpenConnection();
+            connectSql.timkiem(searchname, dataGridView2);
+            connectSql.CloseConnection();
+        }
+
+        private void tb_timkiem_TextChanged(object sender, EventArgs e)
+        {
+            if (timInp.Text != "")
+            {
+                searchname = timInp.Text;
+            }
+        }
+
+        private void exportExcelBtn_Click(object sender, EventArgs e)
+        {
+            connectSql.OpenConnection();
+            connectSql.exportExcel();
+            connectSql.CloseConnection();
+        }
+
+        
     }
 }

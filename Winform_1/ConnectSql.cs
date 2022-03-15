@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
+using System.IO;
+using Syncfusion.XlsIO;
+using System.Reflection;
+using Syroot.Windows.IO;
 
 namespace Winform_1.ConnectSqlNamespace
 {
@@ -39,7 +43,7 @@ namespace Winform_1.ConnectSqlNamespace
             try
             {
                 connection.Open();
-                MessageBox.Show("open connect success");
+                //    MessageBox.Show("open connect success");
             }
             catch (Exception ex)
             {
@@ -58,7 +62,7 @@ namespace Winform_1.ConnectSqlNamespace
             try
             {
                 connection.Close();
-                MessageBox.Show("close connect success");
+                //   MessageBox.Show("close connect success");
             }
             catch (SqlException ex)
             {
@@ -104,6 +108,10 @@ namespace Winform_1.ConnectSqlNamespace
                 /////parameter nao truyen vao k co => dat la null tru msv (khoa chinh)
                 if (!string.IsNullOrEmpty(msv))
                 {
+                    if (msv.Length > 5)
+                    {
+                        throw new Exception("ma sinh vien khong qua 5 ki tu");
+                    }
                     bool isMsvExit = isExit(msv);
                     if (isMsvExit)
                     {
@@ -269,6 +277,10 @@ namespace Winform_1.ConnectSqlNamespace
 
                 if (!string.IsNullOrEmpty(msv))
                 {
+                    if (msv.Length > 5)
+                    {
+                        throw new Exception("ma sinh vien khong qua 5 ki tu");
+                    }
                     bool isMsvExit = isExit(msv);
                     if (isMsvExit)
                     {
@@ -338,6 +350,72 @@ namespace Winform_1.ConnectSqlNamespace
                 /* MessageBox.Show("k");*/
                 return false;
             }
+        }
+
+        internal void exportExcel()
+        {
+            try
+            {
+                using (ExcelEngine excelEngine = new ExcelEngine())
+                {
+                    {
+                        IApplication application = excelEngine.Excel;
+                        application.DefaultVersion = ExcelVersion.Excel2016;
+                        //tao workbook
+                        IWorkbook workbook = application.Workbooks.Create(1);
+                        IWorksheet sheet = workbook.Worksheets[0];
+
+                        string query = "select * from SV";
+                        SqlCommand cmd = new SqlCommand(query, connection);
+                        //cmd.CommandType = CommandType.Text;
+                        SqlDataAdapter dataAdapter = new SqlDataAdapter(cmd);
+                        DataSet dataSet = new DataSet();
+                        dataAdapter.Fill(dataSet, "result");
+
+                        //tao datatable
+                        DataTable dataTable = new DataTable();
+                        dataTable = dataSet.Tables["result"];
+                        sheet.ImportDataTable(dataTable, true, 1, 1, true);
+
+                        //tao bang Excel dat style
+                        IListObject table = sheet.ListObjects.Create("Employee_PersonalDetails", sheet.UsedRange);
+                        table.BuiltInTableStyle = TableBuiltInStyles.TableStyleMedium14;
+                        //Autofit the columns
+                        sheet.UsedRange.AutofitColumns();
+
+                        //luu file
+                        string downloadsPath = new KnownFolder(KnownFolderType.Downloads).Path;
+                        string excelExportedPath = downloadsPath + "\\Output.xlsx";
+                        Stream excelStream = File.Create(excelExportedPath);
+                        workbook.SaveAs(excelStream);
+                        excelStream.Dispose();
+                        MessageBox.Show("file da dc xuat tai " + excelExportedPath);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("loi: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        internal void total()
+        {
+            string query = "select sum(hocphi) from SV";
+            SqlCommand cmd = new SqlCommand(query, connection);
+            string tong = Convert.ToString(cmd.ExecuteScalar());
+            MessageBox.Show("Tổng học phí của danh sách sinh viên là:\n" + tong);
+        }
+
+        internal void timkiem(string msv, DataGridView dataGridView2)
+        {
+            string query = "select * from SV where msv=@msv";
+            SqlCommand cmd = new SqlCommand(query, connection);
+            cmd.Parameters.Add("@msv", msv);
+            SqlDataAdapter dataAdapter = new SqlDataAdapter(cmd);
+            DataSet dataSet = new DataSet();
+            dataAdapter.Fill(dataSet, "result");
+            dataGridView2.DataSource = dataSet.Tables["result"];
         }
     }
 }
