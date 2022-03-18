@@ -74,13 +74,26 @@ namespace Winform_1.ConnectSqlNamespace
         {
             try
             {
-                string query = "select * from SV";
+                string query = "select sv.msv,hoten,ngaysinh,gioitinh,que,lop,khoa,diem,hocphi from SV sv " +
+                               "inner join DIEM d " +
+                               "on d.msv = sv.msv";
+
                 SqlCommand cmd = new SqlCommand(query, connection);
                 //cmd.CommandType = CommandType.Text;
                 SqlDataAdapter dataAdapter = new SqlDataAdapter(cmd);
                 DataSet dataSet = new DataSet();
                 dataAdapter.Fill(dataSet, "result");
                 dataGridView1.DataSource = dataSet.Tables["result"];
+
+                dataGridView1.Columns[0].HeaderText = "Mã SV";
+                dataGridView1.Columns[1].HeaderText = "Họ Tên";
+                dataGridView1.Columns[2].HeaderText = "Ngày Sinh";
+                dataGridView1.Columns[3].HeaderText = "Giới Tính";
+                dataGridView1.Columns[4].HeaderText = "Quê Quán";
+                dataGridView1.Columns[5].HeaderText = "Lớp";
+                dataGridView1.Columns[6].HeaderText = "Khoa";
+                dataGridView1.Columns[7].HeaderText = "Điểm";
+                dataGridView1.Columns[8].HeaderText = "Học Phí";
             }
             catch (Exception ex)
             {
@@ -88,38 +101,29 @@ namespace Winform_1.ConnectSqlNamespace
             }
         }
 
-        internal void InSert(
-            string msv,
-            string hoTen,
-            string ngaySinh,
-            string gioiTinh,
-            string que,
-            string lop,
-            string khoa,
-            double diem,
-            double hocPhi
-            )
+        internal void InSert(SV sv)
         {
             try
             {
-                string query = "insert into SV values(@msv,@hoTen,@ngaySinh,@gioiTinh,@que,@lop,@khoa,@diem,@hocPhi)";
+                string query = "insert into SV values(@msv,@hoTen,@ngaySinh,@gioiTinh,@que,@lop,@khoa,@hocPhi);" +
+                               "insert into DIEM values(@msv,@diem)";
                 SqlCommand cmd = new SqlCommand(query, connection);
 
                 /////parameter nao truyen vao k co => dat la null tru msv (khoa chinh)
-                if (!string.IsNullOrEmpty(msv))
+                if (!string.IsNullOrEmpty(sv.msv))
                 {
-                    if (msv.Length > 5)
+                    if (sv.msv.Length > 5)
                     {
                         throw new Exception("ma sinh vien khong qua 5 ki tu");
                     }
-                    bool isMsvExit = isExit(msv);
+                    bool isMsvExit = isExit(sv.msv);
                     if (isMsvExit)
                     {
                         throw new Exception("ma sinh vien da co");
                     }
                     else
                     {
-                        cmd.Parameters.AddWithValue("@msv", msv);
+                        cmd.Parameters.AddWithValue("@msv", sv.msv);
                     }
                 }
                 else
@@ -128,24 +132,24 @@ namespace Winform_1.ConnectSqlNamespace
                 }
 
                 cmd.Parameters.Add(new SqlParameter("@hoTen", SqlDbType.NVarChar)).Value =
-                    !string.IsNullOrEmpty(hoTen) ? hoTen : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.hoTen) ? sv.hoTen : (object)DBNull.Value;
 
                 cmd.Parameters.Add(new SqlParameter("@ngaySinh", SqlDbType.Date)).Value =
-                 !string.IsNullOrEmpty(ngaySinh) ? ngaySinh : (object)DBNull.Value;
+                 !string.IsNullOrEmpty(sv.ngaySinh) ? sv.ngaySinh : (object)DBNull.Value;
 
-                cmd.Parameters.Add(new SqlParameter("@gioiTinh", SqlDbType.NVarChar)).Value = gioiTinh;
+                cmd.Parameters.Add(new SqlParameter("@gioiTinh", SqlDbType.NVarChar)).Value = sv.gioiTinh;
 
                 cmd.Parameters.Add(new SqlParameter("@que", SqlDbType.NVarChar)).Value =
-                    !string.IsNullOrEmpty(que) ? que : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.que) ? sv.que : (object)DBNull.Value;
 
                 cmd.Parameters.Add(new SqlParameter("@lop", SqlDbType.VarChar)).Value =
-                    !string.IsNullOrEmpty(lop) ? lop : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.lop) ? sv.lop : (object)DBNull.Value;
 
                 cmd.Parameters.Add(new SqlParameter("@khoa", SqlDbType.VarChar)).Value =
-                    !string.IsNullOrEmpty(khoa) ? khoa : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.khoa) ? sv.khoa : (object)DBNull.Value;
 
-                cmd.Parameters.AddWithValue("@diem", diem);
-                cmd.Parameters.AddWithValue("@hocPhi", hocPhi);
+                cmd.Parameters.AddWithValue("@diem", sv.diem);
+                cmd.Parameters.AddWithValue("@hocPhi", sv.hocPhi);
 
                 int res = cmd.ExecuteNonQuery();
                 if (res == 0)
@@ -169,7 +173,9 @@ namespace Winform_1.ConnectSqlNamespace
             {
                 if (!string.IsNullOrEmpty(msvDelete))
                 {
-                    string query = "delete from SV where msv=@msvDelete";
+                    string query = "delete from DIEM where msv=@msvDelete;" +
+                                   "delete from SV where msv=@msvDelete";
+
                     SqlCommand cmd = new SqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@msvDelete", msvDelete);
                     int res = cmd.ExecuteNonQuery();
@@ -199,7 +205,10 @@ namespace Winform_1.ConnectSqlNamespace
             try
             {
                 List<string> list = new List<string>();
-                string query = "select * from SV where msv=@msv";
+                string query = "select sv.msv,hoten,ngaysinh,gioitinh,que,lop,khoa,diem,hocphi from SV sv " +
+                               "inner join DIEM d " +
+                               "on d.msv = sv.msv " +
+                               "where sv.msv=@msv";
 
                 SqlCommand cmd = new SqlCommand(query, connection);
                 cmd.Parameters.AddWithValue("@msv", msv);
@@ -255,36 +264,27 @@ namespace Winform_1.ConnectSqlNamespace
             return null;
         }
 
-        internal void Update(
-            string msv,
-            string hoTen,
-            string ngaySinh,
-            string gioiTinh,
-            string que,
-            string lop,
-            string khoa,
-            double diem,
-            double hocPhi
-            )
+        internal void Update(SV sv)
         {
             try
             {
                 string query =
                     "update SV " +
-                    "set hoten=@hoTen,ngaysinh=@ngaySinh,gioitinh=@gioiTinh,que=@que,lop=@lop,khoa=@khoa,diem=@diem,hocphi=@hocPhi " +
-                    "where msv=@msv";
+                    "set hoten=@hoTen,ngaysinh=@ngaySinh,gioitinh=@gioiTinh,que=@que,lop=@lop,khoa=@khoa,hocphi=@hocPhi " +
+                    "where msv=@msv;" +
+                    "update DIEM set diem=@diem where msv=@msv;";
                 SqlCommand cmd = new SqlCommand(query, connection);
 
-                if (!string.IsNullOrEmpty(msv))
+                if (!string.IsNullOrEmpty(sv.msv))
                 {
-                    if (msv.Length > 5)
+                    if (sv.msv.Length > 5)
                     {
                         throw new Exception("ma sinh vien khong qua 5 ki tu");
                     }
-                    bool isMsvExit = isExit(msv);
+                    bool isMsvExit = isExit(sv.msv);
                     if (isMsvExit)
                     {
-                        cmd.Parameters.AddWithValue("@msv", msv);
+                        cmd.Parameters.AddWithValue("@msv", sv.msv);
                     }
                     else
                     {
@@ -297,24 +297,24 @@ namespace Winform_1.ConnectSqlNamespace
                 }
 
                 cmd.Parameters.Add(new SqlParameter("@hoTen", SqlDbType.NVarChar)).Value =
-                    !string.IsNullOrEmpty(hoTen) ? hoTen : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.hoTen) ? sv.hoTen : (object)DBNull.Value;
 
                 cmd.Parameters.Add(new SqlParameter("@ngaySinh", SqlDbType.Date)).Value =
-                 !string.IsNullOrEmpty(ngaySinh) ? ngaySinh : (object)DBNull.Value;
+                 !string.IsNullOrEmpty(sv.ngaySinh) ? sv.ngaySinh : (object)DBNull.Value;
 
-                cmd.Parameters.Add(new SqlParameter("@gioiTinh", SqlDbType.NVarChar)).Value = gioiTinh;
+                cmd.Parameters.Add(new SqlParameter("@gioiTinh", SqlDbType.NVarChar)).Value = sv.gioiTinh;
 
                 cmd.Parameters.Add(new SqlParameter("@que", SqlDbType.NVarChar)).Value =
-                    !string.IsNullOrEmpty(que) ? que : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.que) ? sv.que : (object)DBNull.Value;
 
                 cmd.Parameters.Add(new SqlParameter("@lop", SqlDbType.VarChar)).Value =
-                    !string.IsNullOrEmpty(lop) ? lop : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.lop) ? sv.lop : (object)DBNull.Value;
 
                 cmd.Parameters.Add(new SqlParameter("@khoa", SqlDbType.VarChar)).Value =
-                    !string.IsNullOrEmpty(khoa) ? khoa : (object)DBNull.Value;
+                    !string.IsNullOrEmpty(sv.khoa) ? sv.khoa : (object)DBNull.Value;
 
-                cmd.Parameters.AddWithValue("@diem", diem);
-                cmd.Parameters.AddWithValue("@hocPhi", hocPhi);
+                cmd.Parameters.AddWithValue("@diem", sv.diem);
+                cmd.Parameters.AddWithValue("@hocPhi", sv.hocPhi);
 
                 int res = cmd.ExecuteNonQuery();
                 if (res == 0)
@@ -365,7 +365,10 @@ namespace Winform_1.ConnectSqlNamespace
                         IWorkbook workbook = application.Workbooks.Create(1);
                         IWorksheet sheet = workbook.Worksheets[0];
 
-                        string query = "select * from SV";
+                        string query = "select sv.msv,hoten,ngaysinh,gioitinh,que,lop,khoa,diem,hocphi from SV sv " +
+                                       "inner join DIEM d " +
+                                       "on d.msv = sv.msv";
+
                         SqlCommand cmd = new SqlCommand(query, connection);
                         //cmd.CommandType = CommandType.Text;
                         SqlDataAdapter dataAdapter = new SqlDataAdapter(cmd);
@@ -378,8 +381,33 @@ namespace Winform_1.ConnectSqlNamespace
                         sheet.ImportDataTable(dataTable, true, 1, 1, true);
 
                         //tao bang Excel dat style
-                        IListObject table = sheet.ListObjects.Create("Employee_PersonalDetails", sheet.UsedRange);
+                        IListObject table = sheet.ListObjects.Create("Student_PersonalDetails", sheet.UsedRange);
+
+                        //style
+
+                        table.Columns[0].Name = "Mã SV";
+                        table.Columns[1].Name = "Họ Tên";
+                        table.Columns[2].Name = "Ngày Sinh";
+                        table.Columns[3].Name = "Giới Tính";
+                        table.Columns[4].Name = "Quê Quán";
+                        table.Columns[5].Name = "Lớp";
+                        table.Columns[6].Name = "Khoa";
+                        table.Columns[7].Name = "Điểm";
+                        table.Columns[8].Name = "Học Phí";
+
                         table.BuiltInTableStyle = TableBuiltInStyles.TableStyleMedium14;
+
+                        sheet.Columns[2].NumberFormat = "m/d/yyyy";
+
+                        sheet.Rows[0].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[0].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[2].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[3].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[5].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[6].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[7].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        sheet.Columns[8].HorizontalAlignment = ExcelHAlign.HAlignCenter;
+
                         //Autofit the columns
                         sheet.UsedRange.AutofitColumns();
 
@@ -407,15 +435,29 @@ namespace Winform_1.ConnectSqlNamespace
             MessageBox.Show("Tổng học phí của danh sách sinh viên là:\n" + tong);
         }
 
-        internal void timkiem(string msv, DataGridView dataGridView2)
+        internal void timkiem(string searchname, DataGridView dataGridView1)
         {
-            string query = "select * from SV where msv=@msv";
+            string query = "select sv.msv,hoten,ngaysinh,gioitinh,que,lop,khoa,diem,hocphi from SV sv " +
+                               "inner join DIEM d " +
+                               "on d.msv = sv.msv where sv.msv = @msv or sv.hoten=@hoten";
+
             SqlCommand cmd = new SqlCommand(query, connection);
-            cmd.Parameters.Add("@msv", msv);
+            cmd.Parameters.AddWithValue("@msv", searchname);
+            cmd.Parameters.AddWithValue("@hoten", searchname);
             SqlDataAdapter dataAdapter = new SqlDataAdapter(cmd);
             DataSet dataSet = new DataSet();
             dataAdapter.Fill(dataSet, "result");
-            dataGridView2.DataSource = dataSet.Tables["result"];
+            dataGridView1.DataSource = dataSet.Tables["result"];
+
+            dataGridView1.Columns[0].HeaderText = "Mã SV";
+            dataGridView1.Columns[1].HeaderText = "Họ Tên";
+            dataGridView1.Columns[2].HeaderText = "Ngày Sinh";
+            dataGridView1.Columns[3].HeaderText = "Giới Tính";
+            dataGridView1.Columns[4].HeaderText = "Quê Quán";
+            dataGridView1.Columns[5].HeaderText = "Lớp";
+            dataGridView1.Columns[6].HeaderText = "Khoa";
+            dataGridView1.Columns[7].HeaderText = "Điểm";
+            dataGridView1.Columns[8].HeaderText = "Học Phí";
         }
     }
 }

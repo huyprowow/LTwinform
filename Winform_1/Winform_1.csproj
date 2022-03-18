@@ -85,6 +85,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>qlsvDataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="SV.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

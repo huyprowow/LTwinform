@@ -186,6 +186,7 @@
             this.dataGridView1.TabIndex = 12;
             this.dataGridView1.DataSourceChanged += new System.EventHandler(this.dataGridView1_DataSourceChanged);
             this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellClick);
+            
             // 
             // msvDataGridViewTextBoxColumn
             // 

@@ -16,16 +16,7 @@ namespace Winform_1
     public partial class Form2 : Form
     {
         private ConnectSql connectSql = new ConnectSql();
-
-        private string msv;
-        private string hoTen;
-        private string que;
-        private string lop;
-        private double hocPhi;
-        private string ngaySinh;
-        private string khoa;
-        private double diem;
-        private string gioiTinh = "nữ";
+        private SV sv = new SV();
         private string msvDelete;
         private string searchname;
 
@@ -66,7 +57,7 @@ namespace Winform_1
         {
             if (msvInp.Text != "")
             {
-                msv = msvInp.Text;
+                sv.msv = msvInp.Text;
             }
         }
 
@@ -74,7 +65,7 @@ namespace Winform_1
         {
             if (hotenInp.Text != "")
             {
-                hoTen = hotenInp.Text;
+                sv.hoTen = hotenInp.Text;
             }
         }
 
@@ -82,7 +73,7 @@ namespace Winform_1
         {
             if (queInp.Text != "")
             {
-                que = queInp.Text;
+                sv.que = queInp.Text;
             }
         }
 
@@ -90,20 +81,20 @@ namespace Winform_1
         {
             if (lopInp.Text != "")
             {
-                lop = lopInp.Text;
+                sv.lop = lopInp.Text;
             }
         }
 
         private void hocphiInp_ValueChanged(object sender, EventArgs e)
         {
-            hocPhi = Convert.ToDouble(hocphiInp.Value);
+            sv.hocPhi = Convert.ToDouble(hocphiInp.Value);
         }
 
         private void khoaInp_TextChanged(object sender, EventArgs e)
         {
             if (khoaInp.Text != "")
             {
-                khoa = khoaInp.Text;
+                sv.khoa = khoaInp.Text;
             }
         }
 
@@ -111,7 +102,7 @@ namespace Winform_1
         {
             if (ngaysinhDatePick.Value != null)
             {
-                ngaySinh = ngaysinhDatePick.Value.ToString("yyyy-MM-dd");
+                sv.ngaySinh = ngaysinhDatePick.Value.ToString("yyyy-MM-dd");
             }
         }
 
@@ -120,7 +111,7 @@ namespace Winform_1
             if (diemComboBox.SelectedIndex != -1)
             {
                 string d = diemComboBox.Items[diemComboBox.SelectedIndex].ToString();
-                diem = Convert.ToDouble(d);
+                sv.diem = Convert.ToDouble(d);
                 //MessageBox.Show(d);
             }
         }
@@ -129,7 +120,7 @@ namespace Winform_1
         {
             if (gtNamRadBtn.Checked)
             {
-                gioiTinh = "nam";
+                sv.gioiTinh = "nam";
             }
         }
 
@@ -141,7 +132,7 @@ namespace Winform_1
             msv, hoTen, que, lop, hocPhi, ngaySinh, khoa, diem, gioiTinh);
             MessageBox.Show(test);*/
             connectSql.OpenConnection();
-            connectSql.InSert(msv, hoTen, ngaySinh, gioiTinh, que, lop, khoa, diem, hocPhi);
+            connectSql.InSert(sv);
             connectSql.GetAllAndRender(dataGridView1);
             connectSql.CloseConnection();
         }
@@ -150,7 +141,7 @@ namespace Winform_1
         {
             if (gtNuRadBtn.Checked)
             {
-                gioiTinh = "nữ";
+                sv.gioiTinh = "nữ";
             }
         }
 
@@ -206,7 +197,7 @@ namespace Winform_1
         private void btnSua_Click(object sender, EventArgs e)
         {
             connectSql.OpenConnection();
-            connectSql.Update(msv, hoTen, ngaySinh, gioiTinh, que, lop, khoa, diem, hocPhi);
+            connectSql.Update(sv);
             connectSql.GetAllAndRender(dataGridView1);
             connectSql.CloseConnection();
         }
@@ -239,7 +230,5 @@ namespace Winform_1
             connectSql.exportExcel();
             connectSql.CloseConnection();
         }
-
-        
     }
 }
